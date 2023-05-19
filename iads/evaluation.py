@@ -16,20 +16,10 @@ import copy
 
 # ------------------------ 
 def crossval_strat(X, Y, n_iterations, iteration):
-    c = Y[0]
-    li_1 = np.where(Y == c)
-    li_2 = np.where(Y != c)
-    X1 = X[li_2]
-    X2 = X[li_1]
-    Y1 = Y[li_2]
-    Y2 = Y[li_1]
-    Xtest = np.concatenate((X1[iteration*(len(X1)//n_iterations):(iteration+1)*(len(X1)//n_iterations)], X2[iteration*(len(X2)//n_iterations):(iteration+1)*(len(X2)//n_iterations)]))
-    Ytest = np.concatenate((Y1[iteration*(len(Y1)//n_iterations):(iteration+1)*(len(Y1)//n_iterations)], Y2[iteration*(len(Y2)//n_iterations):(iteration+1)*(len(Y2)//n_iterations)]))
-    L1 = li_2[0][iteration*(len(X1)//n_iterations):(iteration+1)*(len(X1)//n_iterations)]
-    L2 = li_1[0][iteration*(len(X2)//n_iterations):(iteration+1)*(len(X2)//n_iterations)]
-    L = np.concatenate((L1, L2))
-    Xapp = np.delete(X, L,0)
-    Yapp = np.delete(Y, L,0)   
+    Xtest = X[iteration*(len(X)//n_iterations):(iteration+1)*(len(X)//n_iterations)]
+    Ytest = Y[iteration*(len(Y)//n_iterations):(iteration+1)*(len(Y)//n_iterations)]
+    Xapp = np.concatenate((X[0:iteration*(len(X)//n_iterations)], X[(iteration+1)*(len(X)//n_iterations):len(X)]))
+    Yapp = np.concatenate((Y[0:iteration*(len(Y)//n_iterations)], Y[(iteration+1)*(len(Y)//n_iterations):len(Y)]))   
     return Xapp, Yapp, Xtest, Ytest
 
 # ------------------------ 

@@ -68,6 +68,37 @@ def genere_train_test(desc_set, label_set, n_pos, n_neg):
     
     return (desc_set_train, label_set_train), (desc_set_test, label_set_test)
 
+#-------------------------
+def genere_train_test2(desc_set, label_set, n_pos, n_neg, n_test, n_validation):
+    """ permet de générer une base d'apprentissage et une base de test
+        desc_set: ndarray avec des descriptions
+        label_set: ndarray avec les labels correspondants
+        n_pos: nombre d'exemples de label +1 à mettre dans la base d'apprentissage
+        n_neg: nombre d'exemples de label -1 à mettre dans la base d'apprentissage
+        Hypothèses: 
+           - desc_set et label_set ont le même nombre de lignes)
+           - n_pos et n_neg, ainsi que leur somme, sont inférieurs à n (le nombre d'exemples dans desc_set)
+    """
+    #base d'apprentissage:
+    L_train = random.sample([elem[0] for elem in np.argwhere(label_set == 1)], n_pos) +\
+              random.sample([elem[0] for elem in np.argwhere(label_set == -1)], n_neg)
+    desc_set_train = desc_set[L_train]
+    label_set_train = label_set[L_train]
+
+    #base de test:
+    remaining_indices = [i for i in range(len(desc_set)) if i not in L_train]
+    L_test = random.sample(remaining_indices, n_test)
+    desc_set_test = desc_set[L_test]
+    label_set_test = label_set[L_test]
+
+    #base de validation:
+    remaining_indices = [i for i in remaining_indices if i not in L_test]
+    L_validation = random.sample(remaining_indices, n_validation)
+    desc_set_validation = desc_set[L_validation]
+    label_set_validation = label_set[L_validation]
+    
+    return (desc_set_train, label_set_train), (desc_set_test, label_set_test), (desc_set_validation, label_set_validation)
+
 # ------------------------
 def plot2DSet(desc,labels):    
     """ ndarray * ndarray -> affichage
