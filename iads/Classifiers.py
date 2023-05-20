@@ -82,14 +82,9 @@ class ClassifierKNN(Classifier):
             x: une description : un ndarray
         """
         score = 0
-        liste_dist_pts = []
-        for point in self.data_set:
-            v = [point[j]-x[j] for j in range(len(x))]
-            liste_dist_pts.append(np.linalg.norm(v))
-        liste_dist_pts = np.array(liste_dist_pts).argsort()
-        for index in liste_dist_pts[:self.k]:
-            if self.label_set[index] == 1:
-                score += 1
+        dist = np.asarray([np.dot(x-y, x-y) for y in self.data_set])
+        for i in np.argsort(dist)[:self.k]:
+            score += 1 if self.label_set[i] == +1 else 0
         return (score/self.k)*2 - 1
             
     

@@ -232,3 +232,12 @@ def construit_AD(X,Y,epsilon,LNoms = []):
         for v in Xbest_valeurs:
             noeud.ajoute_fils(v,construit_AD(X[X[:,i_best]==v], Y[X[:,i_best]==v],epsilon,LNoms))
     return noeud
+
+def key_of_max(dico):
+    keymax = -1
+    valmax = -1
+    for key in dico:
+        if dico[key] > valmax:
+            keymax = key
+            valmax= dico[key]
+    return keymax
