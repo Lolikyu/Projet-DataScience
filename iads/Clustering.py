@@ -13,6 +13,9 @@ Année: LU3IN026 - semestre 2 - 2022-2023, Sorbonne Université
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.spatial.distance import cdist
+import matplotlib.cm as cm
+import scipy.cluster.hierarchy
 
 # ------------------------ 
 
@@ -225,7 +228,6 @@ def clustering_hierarchique_average(df):
         p0 = p1
     return liste
 
-import scipy.cluster.hierarchy
 def CHA(DF,linkage='centroid', verbose=False,dendrogramme=False):
     """  
     df : dataframe
@@ -292,62 +294,39 @@ def inertie_cluster(ens):
     c = centroide(ens)
     return np.sum(dist_euclidienne(ens,c)**2)
 
-import random
-
 def init_kmeans(K,Ens):
-    Ens = np.array(Ens)
-    indice = [i for i in range(0, len(Ens))]
-    rand = random.sample(indice,K)
-    return np.array(Ens[rand])
+    return np.array(pd.DataFrame(Ens).sample(n=K))
 
 def plus_proche(Exe,Centres):
-    indice_centroide = -1
-    dist_min = float('inf')
-    for i in range(len(Centres)):
-        dist = dist_euclidienne(Exe, Centres[i])
-        if(dist_min>dist):
-            dist_min = dist
-            indice_centroide = i
-    return indice_centroide
+    return np.argmin([dist_euclidienne(Exe,c) for c in Centres])
 
 def affecte_cluster(Base,Centres):
-    Base = np.array(Base)
-    U = dict()
+    U = {i : [] for i in range(len(Centres))}
     for i in range(len(Base)):
-        key = plus_proche(Base[i],Centres)
-        if key in U:
-            U[key] = U[key]+[i]
-        else:
-            U[key] = [i]
-    return dict(sorted(U.items()))
+        U[plus_proche(np.array(Base)[i],Centres)].append(i)
+    return U
 
 def nouveaux_centroides(Base,U):
-    Base = np.array(Base)
-    centroides = []
-    for key,value in U.items():
-        centroides.append((np.mean(Base[value], axis=0)))
-    return np.array(centroides)
+    X = np.array(Base)
+    result = []
+    for k,desc in U.items():
+        result.append(np.mean([X[i] for i in desc], axis=0))
+    return np.array(result)
 
 def inertie_globale(Base, U):
-    Base = np.array(Base)
-    globale = 0
-    for key,value in U.items():
-        globale += inertie_cluster(Base[value])
-    return globale
+    X = np.array(Base)
+    return sum([inertie_cluster([X[i] for i in desc]) for desc in U.values()])
 
 def kmoyennes(K, Base, epsilon, iter_max):
-    Base = np.array(Base)
     Centres = init_kmeans(K,Base)
-    U1 = affecte_cluster(Base, Centres)
+    U = affecte_cluster(Base,Centres)
     for i in range(iter_max):
-        Centres = init_kmeans(K,Base)
-        U2 = affecte_cluster(Base, Centres)
-        if(abs(inertie_globale(Base,U2) - inertie_globale(Base,U1)) < epsilon):
-            return nouveaux_centroides(Base,U1), U1
-        U1 = U2
-    return [], U1
-
-import matplotlib.cm as cm
+        inertie1 = inertie_globale(Base,U)
+        Centres = nouveaux_centroides(Base,U)
+        U = affecte_cluster(Base,Centres)
+        diff = round(inertie1-inertie_globale(Base,U),4)
+        if abs(diff)<epsilon: break
+    return Centres, U
 
 def affiche_resultat(Base,Centres,Affect):
     couleurs = cm.tab20(np.linspace(0, 1, 20))
@@ -358,8 +337,7 @@ def affiche_resultat(Base,Centres,Affect):
     for ((cluster, val), c) in zip(Affect.items(), couleurs):
         data = Base[val]
         plt.scatter(data[:,0],data[:,1],color=c) 
-        
-#INDEX DE DUNN -> plus l'indice est grande, plus les cluster sont séparés
+
 def Dunn(Base,U):
     Base = np.array(Base)
     dist_min_centroide = float('inf')
@@ -380,8 +358,6 @@ def Dunn(Base,U):
             dist_max = max(dist_max, dist_euclidienne(Base[i], Base[i+1]))
         dist_max_point.append(dist_max)
     return dist_min_centroide/max(dist_max_point)
-    
-#INDEX DE XIE-BENI -> plus l'indice est petit, plus le cluster sont sépareés et les points du cluster sont proches
 
 def XieBeni(Base, U):
     Base = np.array(Base)
