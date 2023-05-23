@@ -11,15 +11,15 @@ Année: LU3IN026 - semestre 2 - 2022-2023, Sorbonne Université
 
 # import externe
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
+import scipy.cluster.hierarchy
+import matplotlib.cm as cm
 
 # ------------------------ 
 
 def normalisation(df):
     return (df - df.min()) / (df.max() - df.min())
 
-import math
 def dist_euclidienne(v1,v2):
     x1=np.array(v1)
     x2=np.array(v2)
@@ -225,7 +225,6 @@ def clustering_hierarchique_average(df):
         p0 = p1
     return liste
 
-import scipy.cluster.hierarchy
 def CHA(DF,linkage='centroid', verbose=False,dendrogramme=False):
     """  
     df : dataframe
@@ -346,8 +345,6 @@ def kmoyennes(K, Base, epsilon, iter_max):
             return nouveaux_centroides(Base,U1), U1
         U1 = U2
     return [], U1
-
-import matplotlib.cm as cm
 
 def affiche_resultat(Base,Centres,Affect):
     couleurs = cm.tab20(np.linspace(0, 1, 20))
